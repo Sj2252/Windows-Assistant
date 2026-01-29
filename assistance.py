@@ -7,6 +7,7 @@ import win32con
 import subprocess
 import win32api
 import urllib.parse
+from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume
 
 # Application configuration dictionary
 APPS = {
@@ -22,7 +23,7 @@ APPS = {
     "vlc": {"command": "vlc", "window_title": "VLC media player", "type": "system"},#10
     "explorer": {"command": "explorer", "window_title": "File Explorer", "type": "system"},#11
     "cmd": {"command": "cmd.exe", "window_title": "Command Prompt", "type": "system"},#12
-    "edge": {"command": "msedge", "window_title": "Microsoft Edge", "type": "system"}#13
+    "microsoft ed": {"command": "msedge", "window_title": "Microsoft Edge", "type": "system"}#13
 }
 
 def max(name):
@@ -130,6 +131,33 @@ def search_web(query):
     except Exception as e:
         speak(f"Error searching for {query}")
         print(f"Error: {e}")
+        return False
+
+def set_volume_percentage(percentage):
+    """
+    Set system volume to a specific percentage (0-100)
+    """
+    if not 0 <= percentage <= 100:
+        print("Error: Volume percentage must be between 0 and 100")
+        speak("Volume must be between 0 and 100 percent")
+        return False
+    
+    try:
+        # Get the default speaker
+        devices = AudioUtilities.GetSpeakers()
+        volume_interface = devices.EndpointVolume
+        
+        # Convert percentage to decimal (0.0 to 1.0)
+        volume_level = percentage / 100.0
+        
+        # Set the volume using scalar (0.0 to 1.0)
+        volume_interface.SetMasterVolumeLevelScalar(volume_level, None)
+        speak(f"Volume set to {percentage} percent")
+        return True
+        
+    except Exception as e:
+        print(f"Error setting volume: {e}")
+        speak("Error setting volume")
         return False
 
 # Initialize Windows voice engine
@@ -311,7 +339,29 @@ while True:
             min(name)
             speak(f"Minimized {name}")
 
-    elif "stop assistant" in command or "exit" in command or "quit" in command:
+    elif "volume" in command or "sound" in command:
+        # Extract volume percentage from command like "set volume to 50" or "volume 75"
+        import re
+        # Try to find a number in the command
+        numbers = re.findall(r'\d+', command)
+        if numbers:
+            volume_percent = int(numbers[0])
+            set_volume_percentage(volume_percent)
+        else:
+            speak("What volume level would you like? Say a number between 0 and 100.")
+            vol_command = take_command()
+            try:
+                vol_numbers = re.findall(r'\d+', vol_command)
+                if vol_numbers:
+                    volume_percent = int(vol_numbers[0])
+                    set_volume_percentage(volume_percent)
+                else:
+                    speak("I did not understand the volume level.")
+            except Exception as e:
+                print(f"Error: {e}")
+                speak("Error setting volume")
+
+    elif "off assistant" in command or "exit" in command or "quit" in command or "mute" in command:
         speak("Thank you. Goodbye!")
         break
 
