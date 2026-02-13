@@ -1,4 +1,4 @@
-The Windows Assistant is a **voice-controlled application** designed to manage desktop tasks. It relies on the *Voice Engine* (0) to continuously listen and convert spoken words into text commands, which are then passed to the *Central Router* (1) via an asynchronous queue (5). The router analyzes the intent and executes various actions, such as launching and manipulating software windows using the *Application Control Layer* (3) or interacting directly with the operating system, like adjusting the *system volume* (4).
+**The Windows Assistant is a **voice-controlled application** designed to manage desktop tasks. It relies on the *Voice Engine* (0) to continuously listen and convert spoken words into text commands, which are then passed to the *Central Router* (1) via an asynchronous queue (5). The router analyzes the intent and executes various actions, such as launching and manipulating software windows using the *Application Control Layer* (3) or interacting directly with the operating system, like adjusting the *system volume* (4).
 
 
 ## Visual Overview
@@ -909,3 +909,4 @@ The **Inter-Process Communication Queue** is the unsung hero of the `Windows-Ass
 By mastering the concepts covered in these chapters—from voice recognition and safe queuing to command routing and specialized application control—you now have a full understanding of the robust and modular architecture of the `Windows-Assistant` project!
 
 ---
+**
