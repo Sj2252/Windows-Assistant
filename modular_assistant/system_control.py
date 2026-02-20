@@ -1,3 +1,4 @@
+import wmi
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume
 from voice_engine import speak
 
@@ -26,4 +27,20 @@ def set_volume_percentage(percentage):
     except Exception as e:
         print(f"Error setting volume: {e}")
         speak("Error setting volume")
+        return False
+
+def set_brightness(level):
+    """
+    Set screen brightness to a specific level (0-100)
+    """
+    level = max(0, min(100, level))
+    try:
+        c = wmi.WMI(namespace='wmi')
+        methods = c.WmiMonitorBrightnessMethods()[0]
+        methods.WmiSetBrightness(level, 0)
+        speak(f"Brightness set to {level} percent")
+        return True
+    except Exception as e:
+        print(f"Error setting brightness: {e}")
+        speak("I could not change the brightness on this device.")
         return False

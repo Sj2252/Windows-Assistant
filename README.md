@@ -1,4 +1,4 @@
-**The Windows Assistant is a **voice-controlled application** designed to manage desktop tasks. It relies on the *Voice Engine* (0) to continuously listen and convert spoken words into text commands, which are then passed to the *Central Router* (1) via an asynchronous queue (5). The router analyzes the intent and executes various actions, such as launching and manipulating software windows using the *Application Control Layer* (3) or interacting directly with the operating system, like adjusting the *system volume* (4).
+**The Windows Assistant is a **voice-controlled application** designed to manage desktop tasks. It relies on the *Voice Engine* (0) to continuously listen and convert spoken words into text commands, which are then passed to the *Central Router* (1) via an asynchronous queue (5). The router analyzes the intent and executes various actions, such as launching and manipulating software windows using the *Application Control Layer* (3) or interacting directly with the operating system, like adjusting the *system volume* and *screen brightness* (4).
 
 
 ## Visual Overview
@@ -522,7 +522,7 @@ Interacting with fundamental operating system functions (like audio, network, or
 1.  **Encapsulating Complexity:** Hiding the difficult Windows API calls inside simple Python functions.
 2.  **Focusing on System Functions:** Providing a dedicated space for non-application-specific tasks.
 
-Currently, the primary function of this module is highly effective **system volume management**.
+Currently, the primary functions of this module are highly effective **system volume and screen brightness management**.
 
 ---
 
@@ -598,6 +598,37 @@ Once we have the control interface (`volume_interface`), we convert the user's i
 
 ---
 
+## Key Concept 3: Controlling Screen Brightness (`wmi`)
+
+Just like volume, adjusting the screen brightness requires a specialized tool. We use the **`wmi`** (Windows Management Instrumentation) library to communicate with the monitor's features.
+
+### Setting Brightness Levels
+
+The assistant can set the brightness to a specific percentage or use presets for increasing and decreasing brightness.
+
+```python
+# Part of modular_assistant/system_control.py
+import wmi
+
+def set_brightness(level):
+    """Set screen brightness (0-100)"""
+    level = max(0, min(100, level))
+    try:
+        c = wmi.WMI(namespace='wmi')
+        methods = c.WmiMonitorBrightnessMethods()[0]
+        methods.WmiSetBrightness(level, 0)
+        speak(f"Brightness set to {level} percent")
+    except Exception as e:
+        speak("I could not change the brightness on this device.")
+```
+
+**Common Commands:**
+- **"Iris set brightness to 50"**: Sets a precise level.
+- **"Iris increase brightness"**: Jumps to a high visibility preset (80%).
+- **"Iris decrease brightness"**: Lowers brightness for comfort (30%).
+
+---
+
 ## The System Control Workflow
 
 Let's trace the journey of the command **"Iris set volume to 80"** as it is handled by the specialized layers.
@@ -621,7 +652,7 @@ This sequence demonstrates the power of abstraction: the [Central Command Router
 
 ## Summary and Next Steps
 
-The **System Hardware Control** layer is the module responsible for interacting directly with the computer's core operating system functions, currently focusing on volume control via the `pycaw` library. By isolating this low-level interaction, we keep the rest of the assistant clean and focused on interpreting user intent.
+The **System Hardware Control** layer is the module responsible for interacting directly with the computer's core operating system functions, currently focusing on volume and brightness control. By isolating these low-level interactions, we keep the rest of the assistant clean and focused on interpreting user intent.
 
 We have now covered how to listen, how to think, how to control applications, and how to control the system itself. But how does the assistant quickly look up the exact launch command for "Spotify" or "Word"? It needs a central address book.
 .

@@ -2,7 +2,7 @@ import datetime
 import re
 from voice_engine import speak, start_listening, command_queue
 from app_control import open_app, close_app_by_name, maximize_window, minimize_window, restore_window
-from system_control import set_volume_percentage
+from system_control import set_volume_percentage, set_brightness
 from web_interaction import search_web
 
 def main():
@@ -105,6 +105,16 @@ def main():
                 if numbers:
                     volume_percent = int(numbers[0])
                     set_volume_percentage(volume_percent)
+
+            elif "brightness" in command:
+                numbers = re.findall(r'\d+', command)
+                if numbers:
+                    level = int(numbers[0])
+                    set_brightness(level)
+                elif "increase" in command:
+                    set_brightness(80)
+                elif "decrease" in command:
+                    set_brightness(30)
 
             elif "sleep" in command or "go to sleep" in command:
                 speak("Going to sleep. Say Arise to wake me.")
