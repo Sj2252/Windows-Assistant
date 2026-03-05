@@ -25,6 +25,7 @@ MANIFEST
 venv/
 ENV/
 env/
+.env
 
 # IDE
 .vscode/
@@ -36,6 +37,15 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Project Specific
+*.log
+excel_reg_backup.reg
+*.bak
+*.old
+node_modules/
+package-lock.json
+/static/dist/
 
 
 

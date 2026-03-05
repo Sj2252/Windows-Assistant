@@ -3,6 +3,7 @@ import win32con
 import win32com.client
 import os
 import subprocess
+import shutil
 from config import APPS
 from voice_engine import speak
 
@@ -113,10 +114,16 @@ def open_office_app(office_app, app_name):
         print(f"Error: {e}")
         return False
 
+
 def open_app(app_name):
     """Open any application dynamically"""
     app_lower = app_name.lower().strip()
     
+    # Handle redundant "open open" case
+    if app_lower == "open":
+        speak("I'm sorry, I didn't catch the name of the application you want to open.")
+        return False
+        
     if app_lower in APPS:
         app_config = APPS[app_lower]
         if app_config["type"] == "system":
@@ -124,13 +131,17 @@ def open_app(app_name):
         elif app_config["type"] == "office":
             return open_office_app(app_config["office_app"], app_lower)
     else:
-        # Try to open as generic command
-        try:
-            subprocess.Popen(app_lower, shell=True)
-            speak(f"Opening {app_lower}")
-            return True
-        except:
-            speak(f"Application {app_lower} not found")
+        # Check if it's a valid executable in PATH
+        if shutil.which(app_lower):
+            try:
+                subprocess.Popen(app_lower, shell=True)
+                speak(f"Opening {app_lower}")
+                return True
+            except:
+                speak(f"I found {app_lower} but couldn't start it.")
+                return False
+        else:
+            speak(f"I couldn't find an application named {app_lower}.")
             return False
 
 def close_app_by_name(app_name):

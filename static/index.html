@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iris - Voice Assistant</title>
+    <link rel="icon" type="image/png" href="/static/assets/logo.png">
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -19,7 +20,7 @@
     <main class="dashboard">
         <header class="header">
             <div class="logo">
-                <span class="logo-icon">💠</span>
+                <img src="/static/assets/logo.png" alt="IRIS Logo" class="logo-img">
                 <h1>Iris Assistant</h1>
             </div>
             <div class="header-actions">
@@ -31,8 +32,14 @@
 
         <section class="main-content">
             <div class="visualizer-container">
+                <canvas id="visualizer-canvas"></canvas>
                 <div id="visualizer-orb" class="orb dormant">
-                    <div class="orb-inner"></div>
+                    <div class="orb-ring ring-1"></div>
+                    <div class="orb-ring ring-2"></div>
+                    <div class="orb-ring ring-3"></div>
+                    <div class="orb-ring ring-4"></div>
+                    <div class="scan-line"></div>
+                    <div class="orb-core"></div>
                 </div>
                 <div id="current-state" class="state-label">Dormant</div>
                 <div id="last-command" class="last-command-text">Say "Arise" to wake me up</div>
@@ -103,8 +110,15 @@
                         <li><strong>"Search for [query]"</strong>: Opens browser search</li>
                         <li><strong>"What time is it?"</strong>: Speaks current time</li>
                         <li><strong>"Go to sleep"</strong>: Returns to dormant mode</li>
-                        <li><strong>"Shutdown"</strong>: Closes the assistant entirely</li>
+                        <li><strong>"Stop Assistant"</strong>: Closes the assistant entirely</li>
                     </ul>
+                </section>
+                <section class="manual-section full-width">
+                    <h3>📂 Compatible Apps</h3>
+                    <p>You can control these apps by saying <strong>"Iris [open/close] [name]"</strong></p>
+                    <div id="apps-container" class="apps-grid">
+                        <!-- App items as pills -->
+                    </div>
                 </section>
             </div>
         </div>

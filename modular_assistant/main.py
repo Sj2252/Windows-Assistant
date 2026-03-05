@@ -39,6 +39,12 @@ async def shutdown():
     os.kill(os.getpid(), signal.SIGINT)
     return {"status": "shutting down"}
 
+@app.get("/apps")
+async def get_apps():
+    """Endpoint to get the list of supported applications"""
+    from config import APPS
+    return {"apps": list(APPS.keys())}
+
 # Global for connected UI clients
 connected_clients = set()
 
@@ -75,7 +81,7 @@ def main():
     webbrowser.open("http://localhost:8000")
     
     # Greeting
-    speak("Hello, I am your Windows voice assistant. Say Arise to wake me up.")
+    speak("Hello, I am Iris your Windows voice assistant. Say Arise to wake me up.")
     
     # Start background listening
     listener = start_listening()
@@ -129,6 +135,7 @@ def main():
                     # Check if there's a command after "iris"
                     if command:
                         print(f"Executing command: {command}")
+                        loop.run_until_complete(notify_ui("state", "listening"))
                         # Fall through to command processing
                     else:
                         # User said just "Iris", enter listening mode
@@ -143,7 +150,11 @@ def main():
             
             # --- Command Processing ---
             
-            if "time" in command:
+            if any(k in command for k in ["exit", "quit", "shutdown", "stop assistant", "stop the assistant"]):
+                speak("Thank you. Goodbye!")
+                break
+
+            elif "time" in command:
                 time_str = datetime.datetime.now().strftime("%H:%M")
                 speak(f"The time is {time_str}")
 
@@ -156,26 +167,36 @@ def main():
                     pass 
 
             elif "open" in command:
-                app_name = command.replace("open ", "").strip()
+                # Remove "open" prefix(es)
+                app_name = re.sub(r'^(open\s*)+', '', command).strip()
                 if app_name:
                     open_app(app_name)
+                else:
+                    speak("What application would you like me to open?")
 
             elif "close" in command or "stop" in command:
-                app_name = command.replace("close ", "").replace("stop ", "").strip()
+                # Remove "close" or "stop" prefix(es)
+                app_name = re.sub(r'^(close\s*|stop\s*)+', '', command).strip()
                 if app_name:
                     close_app_by_name(app_name)
+                else:
+                    speak("Which application should I close?")
 
             elif "max" in command or "maximize" in command:
-                app_name = command.replace("maximize ", "").replace("max ", "").strip()
+                app_name = re.sub(r'^(maximize\s*|max\s*)+', '', command).strip()
                 if app_name:
                     if maximize_window(app_name):
                         speak(f"Maximized {app_name}")
+                else:
+                    speak("Which window would you like me to maximize?")
 
             elif "min" in command or "minimize" in command:
-                app_name = command.replace("minimize ", "").replace("min ", "").strip()
+                app_name = re.sub(r'^(minimize\s*|min\s*)+', '', command).strip()
                 if app_name:
                     if minimize_window(app_name):
                         speak(f"Minimized {app_name}")
+                else:
+                    speak("Which window would you like me to minimize?")
 
             elif "volume" in command or "sound" in command:
                 numbers = re.findall(r'\d+', command)
@@ -230,12 +251,10 @@ def main():
                 elif "previous" in command:
                     control_media("previous")
 
-            elif "exit" in command or "quit" in command or "shutdown" in command:
-                speak("Thank you. Goodbye!")
-                break
-            
+
             # After command, return to active session waiting for "Iris"
             if session_active and not listening_for_command:
+                loop.run_until_complete(notify_ui("state", "active"))
                 print("State: Active Session - Waiting for 'Iris'")
             
         except KeyboardInterrupt:

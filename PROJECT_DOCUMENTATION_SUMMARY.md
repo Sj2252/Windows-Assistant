@@ -1,40 +1,44 @@
 ﻿# Windows Voice Assistant - Project Documentation (Module Summary)
 
 **Project Name:** Windows Voice Assistant  
-**Date:** February 13, 2026  
+**Date:** March 5, 2026  
 **Repository:** Sj2252/Windows-Assistant
 
 ---
 
 ## Purpose
-A Windows voice assistant that listens continuously and executes system/app actions based on voice commands.
+A premium Windows voice assistant with a real-time web dashboard. It listens continuously and executes system/app actions based on voice commands with high precision.
 
 ---
 
 ## Modules (What They Do)
-- `voice_engine.py`: Speech recognition + text-to-speech, pushes commands to a queue.
-- `main.py`: State machine + intent routing.
-- `app_control.py`: Launch/close apps, window control.
-- `system_control.py`: Volume control.
-- `web_interaction.py`: Open web search in browser.
-- `config.py`: App registry + API configuration.
+- `voice_engine.py`: Speech recognition + TTS + Queue management.
+- `main.py`: Event loop + FastAPI Server + Regex Router.
+- `app_control.py`: Verified app launching + Window management.
+- `system_control.py`: Volume, Brightness, and Media control.
+- `web_interaction.py`: Web searches.
+- `config.py`: Settings, API keys, and App Registry.
 
 ---
 
 ## Core Logic (Short)
-1. Background listener recognizes speech.
-2. Callback puts text into queue.
-3. Main loop reads queue and checks state.
-4. Router detects intent and calls handler.
-5. Handler performs action and speaks feedback.
+1. **Listen**: Background thread recognizes speech.
+2. **Clean**: Regex removes redundant keywords (e.g., "open open").
+3. **Verify**: Checks if application exists before announcing "Opening".
+4. **Route**: Intent matches calls specialized handler.
+5. **Update**: Dashboard reflects action via WebSockets.
+6. **Speak**: Confirms action via Windows TTS.
 
 ---
 
 ## Key Patterns
-- State machine for activation
-- Producer/consumer queue
-- Factory pattern for app launching
+- **Dormant/Active States** with 3D status feedback.
+- **WebSocket Observer** for real-time UI synchronization.
+- **Dynamic Audio Visualizer** for instant mic feedback.
+- **3D JARVIS Globe** with multi-axis holographic rotation.
+- **Regex Routing** for robust command recognition.
 
 ---
 
 **End of Document**
+

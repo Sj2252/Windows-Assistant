@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+SpeechRecognition
+PyAudio
+pywin32
+WMI
+pycaw
+azure-cognitiveservices-speech

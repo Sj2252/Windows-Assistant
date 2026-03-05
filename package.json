@@ -1,0 +1,28 @@
+{
+  "name": "arise-voice-assistant",
+  "version": "1.3.0",
+  "description": "A premium, modular Windows voice assistant with a real-time web dashboard. Features system control, app automation, and a sophisticated state-based activation system.",
+  "author": "Antigravity & Sj2252",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sj2252/Windows-Assistant"
+  },
+  "scripts": {
+    "setup": "pip install -r requirements.txt",
+    "start": "python modular_assistant/main.py",
+    "clean": "powershell -Command \"Remove-Item -Recurse -Force **/(__pycache__|*.pyc|*.old|*.bak)\""
+  },
+  "keywords": [
+    "voice-assistant",
+    "automation",
+    "windows",
+    "fastapi",
+    "python",
+    "speech-recognition"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

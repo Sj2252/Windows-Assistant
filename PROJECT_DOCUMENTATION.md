@@ -1,23 +1,26 @@
 ﻿# Windows Voice Assistant - Project Documentation (Full Logic)
 
 **Project Name:** Windows Voice Assistant  
-**Date:** February 13, 2026  
+**Date:** March 5, 2026  
 **Repository:** Sj2252/Windows-Assistant
 
 ---
 
 ## 1. Overview
-This project is a modular Windows voice assistant. It listens continuously, converts speech to text, routes intent, and executes system/app actions. The system is built around:
+This project is a modular Windows voice assistant with a modern web dashboard. It listens continuously, converts speech to text, routes intent, and executes system/app actions. The system is built around:
 - A background listener thread
 - A thread-safe queue
-- A small state machine
+- A robust state machine
 - Specialized control modules
+- A FastAPI web interface
 
 ---
 
 ## 2. High-Level Flow
 ```
 Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router -> Handler -> TTS -> Speaker
+                                                       |
+                                                       -> WebSocket -> Web Dashboard
 ```
 
 1. The voice engine listens in the background.
@@ -25,8 +28,9 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 3. The callback pushes text into a thread-safe queue.
 4. The main loop blocks on the queue, then processes commands.
 5. The state machine determines whether the system is dormant, active, or listening.
-6. The router detects intent and calls the correct module.
-7. The handler executes the action and speaks feedback.
+6. The router detects intent using regex to clean redundant keywords.
+7. The handler verifies the request (e.g., checking if an app exists) and executes the action.
+8. Feedback is spoken via TTS and sent to the dashboard via WebSockets.
 
 ---
 
@@ -43,124 +47,88 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 - `start_listening()`: chooses Google or Azure based on config.
 - `callback_google(...)`: converts audio to text and puts it in the queue.
 
-**Key idea:** the callback runs in a background thread and never blocks the main loop.
-
 ---
 
 ### 3.2 `main.py`
 **Responsibilities:**
-- Main event loop
-- State machine for activation
-- Intent routing
+- Main event loop and FastAPI server management
+- State machine for activation (Arise -> Iris -> Command)
+- Advanced intent routing and command cleaning
 
-**State machine logic:**
-- Dormant: ignores input until wake word.
-- Active: accepts commands with prefix.
-- Listening: waits for next command after wake word only.
-
-**Core loop behavior:**
-1. Block on queue: `command_queue.get()`
-2. If dormant, check for "arise" to activate
-3. If active, check for "iris" prefix
-4. If only wake word, enter listening mode
-5. Else parse intent and route
+**Command Parsing Logic:**
+- Uses **Regex** to remove redundant prefixes (e.g., "open open word" becomes "word").
+- Handles combined commands and state transitions.
+- Includes a dedicated "stop assistant" command for instant shutdown.
 
 **Intent routing:**
-- `open` -> app control
+- `stop assistant` -> Immediate termination
+- `open` -> app control (with verification)
 - `close` / `stop` -> app control
-- `maximize` / `minimize` / `restore` -> app control
+- `maximize` / `minimize` -> app control
 - `volume` -> system control
 - `brightness` -> system control
-- `play` / `pause` / `next` / `previous` -> system control
+- `play` / `pause` / `next` / `previous` -> media control
 - `search` -> web interaction
 
 ---
 
 ### 3.3 `app_control.py`
 **Responsibilities:**
-- Launch apps
-- Close apps
-- Window management
+- Launch apps with pre-launch verification
+- Close apps and window management
 
-**Launch logic (Factory pattern):**
-- Check `APPS` registry in `config.py`.
-- If type is `system`, launch via shell `start`.
-- If type is `office`, launch via COM automation.
-
-**Window control:**
-- Locate window by exact or partial title.
-- Use Win32 API to maximize, minimize, restore, or close.
+**Launch logic:**
+1. Check `APPS` registry in `config.py`.
+2. If unknown, use `shutil.which` to check if it exists in the system PATH.
+3. If valid, launch via `os.system` (system) or COM (office).
+4. If invalid, notify the user that the application was not found.
 
 ---
 
 ### 3.4 `system_control.py`
 **Responsibilities:**
-- Volume control
-- Brightness control
-- Media playback control
-
-**Core logic:**
-- Volume: Use `pycaw` to set master volume scalar (0.0-1.0).
-- Brightness: Use `wmi` to set monitor brightness levels.
-- Media: Use `win32api` to send global media keys (Play/Pause, Next, Previous).
-
----
-
-### 3.5 `web_interaction.py`
-**Responsibilities:**
-- Perform web searches
-
-**Core logic:**
-- URL-encode query
-- Use ShellExecute to open browser with search URL
-
----
-
-### 3.6 `config.py`
-**Responsibilities:**
-- Centralized configuration
-- Application registry
-
-**Core logic:**
-- `APPS` maps app names to launch metadata
-- Azure keys and config flags stored here
+- Volume control (via `pycaw`)
+- Brightness control (via `wmi`)
+- Global media playback control (via `win32api`)
 
 ---
 
 ## 4. Concurrency and Thread Safety
-- Recognition runs in a background thread.
-- The queue is the only shared state.
-- The main loop blocks on queue reads, so CPU usage stays low.
+- **Listening**: Runs in a background thread.
+- **Web Server**: FastAPI runs in a background thread using Uvicorn.
+- **Communication**: Thread-safe `queue.Queue` for commands and async WebSockets for UI updates.
 
 ---
 
 ## 5. Design Patterns Used
-- State Machine: activation and listening modes
-- Factory: app launching by type
-- Producer/Consumer: background listener + main loop
-- Abstraction: simple helper functions hide OS/COM complexity
+- **State Machine**: activation and listening modes.
+- **Factory**: app launching by type (System vs Office).
+- **Observer/Notify**: Real-time dashboard updates via WebSockets.
+- **Strategy**: Pluggable speech recognition providers.
 
 ---
 
 ## 6. Dependencies
-- `SpeechRecognition`
-- `pywin32`
-- `pycaw`
-- `azure-cognitiveservices-speech` (optional)
+- `SpeechRecognition`, `PyAudio` (Recognition)
+- `pywin32`, `WMI`, `pycaw` (System Control)
+- `fastapi`, `uvicorn` (Web Dashboard)
 
 ---
 
-## 7. Extending the Project
-- Add apps by updating `APPS` in `config.py`
-- Add commands by extending routing in `main.py`
-- Add new modules and import them in `main.py`
+## 7. Troubleshooting & Common Fixes
+- **Office Apps Won't Open**: 
+  - Corrupted templates: Delete or rename `Normal.dotm` for Word.
+  - Corrupted toolbars: Rename `.xlb` files in AppData for Excel.
+  - Printer Issues: Ensure a valid default printer (like "Microsoft Print to PDF") is selected.
+- **Microphone Not Detected**: Check Windows Privacy Settings for Microphone access and ensure `PyAudio` is correctly installed.
 
 ---
 
 ## 8. Changelog
-**v1.0** Initial implementation: voice engine, router, app control, system control, web interaction, config.
-**v1.1** Added brightness control using WMI.
-**v1.2** Added Spotify support and global media playback controls (Play/Pause, Next, Previous).
+- **v1.0** Initial modular implementation.
+- **v1.1** Added brightness control and media keys.
+- **v1.2** Added Web Dashboard and WebSocket integration.
+- **v1.3** Improved command parsing (Regex), application verification (`shutil`), and "stop assistant" command.
 
 ---
 
@@ -168,16 +136,17 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 ```
 Voice_Assistant/
 |-- modular_assistant/
-|   |-- main.py
-|   |-- voice_engine.py
-|   |-- app_control.py
-|   |-- system_control.py
-|   |-- web_interaction.py
-|   `-- config.py
+|   |-- main.py (Entry point & Router)
+|   |-- voice_engine.py (Audio I/O)
+|   |-- app_control.py (App/Window mgmt)
+|   |-- system_control.py (OS Hardware)
+|   |-- web_interaction.py (Web search)
+|   `-- config.py (Settings & App list)
+|-- static/ (Dashboard UI)
 |-- README.md
 `-- PROJECT_DOCUMENTATION.md
 ```
 
 ---
 
-**End of Beginning**
+**End of Document**

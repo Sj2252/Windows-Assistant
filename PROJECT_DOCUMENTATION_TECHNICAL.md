@@ -1,85 +1,68 @@
 ﻿# Windows Voice Assistant - Project Documentation (Technical Summary)
 
 **Project Name:** Windows Voice Assistant  
-**Date:** February 13, 2026  
+**Date:** March 5, 2026  
 **Repository:** Sj2252/Windows-Assistant
 
 ---
 
 ## Architecture (Condensed)
 ```
-Mic -> SR -> Callback -> Queue -> State -> Router -> Control -> TTS -> Speaker
+Mic -> SR -> Background Thread -> Queue -> Regex Router -> Control Modules -> TTS
+                                             |
+                                             -> FastAPI -> WebSockets -> Dashboard
 ```
 
 ---
 
 ## Modules + Key Logic
 
-### `voice_engine.py`
-- `speak(text)`: Windows SAPI via COM
-- `start_listening()`: Google or Azure based on config
-- Background callback: converts audio -> text -> queue
+### `voice_engine.py` (Audio I/O)
+- **SAPI TTS**: `win32com.client.Dispatch("SAPI.SpVoice")`
+- **Speech Recognition**: Uses `recognize_google` or `start_listening_azure` in background.
 
-### `main.py`
-- `command_queue.get()` blocks until input
-- States: Dormant, Active, Listening
-- Routes intents via keyword matching
+### `main.py` (Entry & Router)
+- **Queue Reading**: `command_queue.get()` blocks.
+- **Regex Routing**: Uses `re.sub(r'^(prefix\s*)+', '', command)` to clean input.
+- **Web UI**: Serves static dashboard and pushes events via `notify_ui` (async WebSockets).
+- **Termination**: Explicit `top-of-router` check for "stop assistant".
 
-### `app_control.py`
-- Reads `APPS` registry
-- Launch by type:
-  - `system`: `os.system("start ...")`
-  - `office`: COM automation
-- Window control using Win32 API
+### `app_control.py` (App Management)
+- **Shutil Check**: `shutil.which(app_name)` verifies executable existence.
+- **Launch Strategy**: Registry lookup -> System start -> COM Automation.
+- **Win32 API**: Uses `ShowWindow` and `PostMessage` for window state management.
 
-### `system_control.py`
-- `set_volume_percentage(p)`: Sets volume with `pycaw`
-- `set_brightness(level)`: Sets brightness via WMI
-- `control_media(action)`: Sends media keys via `win32api`
-
-### `web_interaction.py`
-- URL-encode query and open browser
-
-### `config.py`
-- App registry + Azure keys and flags
+### `system_control.py` (OS Hardware)
+- **Audio**: `pycaw` sets Master scalar (0.0-1.0).
+- **Brightness**: `wmi` sets monitor percentage level.
+- **Media**: `win32api` sends virtual key codes for hardware media buttons.
 
 ---
 
 ## Key Patterns
-- State machine for activation and command scope
-- Producer/consumer queue for threading
-- Factory for app launch strategy
+- **State Machine**: (Dormant -> Active -> Listening) manages wake-word persistence.
+- **WebSocket Observer**: Pushes all state changes and transcripts to the frontend.
+- **Regex Sanitization**: Handles the "open open" and redundant keyword errors.
+- **Audio Visualizer**: Uses Web Audio API `AnalyserNode` for real-time Fourier analysis.
+- **3D CSS Transforms**: Implements `perspective` and `rotate3d` for the holographic HUD.
 
 ---
 
 ## Dependencies
-- `SpeechRecognition`
-- `pywin32`
-- `pycaw`
-- `azure-cognitiveservices-speech` (optional)
+- `fastapi`, `uvicorn` (Server)
+- `SpeechRecognition`, `PyAudio` (Audio)
+- `pywin32`, `WMI`, `pycaw` (Windows API)
 
 ---
 
 ## Example Snippets
 ```python
-# Start listening with chosen provider
-if USE_AZURE_SPEECH:
-    start_listening_azure()
-else:
-    start_listening_google()
-```
+# Regex prefix cleaning
+app_name = re.sub(r'^(open\s*)+', '', command).strip()
 
-```python
-# Router (simplified)
-if "open" in command:
-    open_app(name)
-elif "volume" in command:
-    set_volume_percentage(p)
-```
-
-```python
-# Volume conversion
-volume_interface.SetMasterVolumeLevelScalar(percentage / 100.0, None)
+# Verification before launch
+if shutil.which(app_lower):
+    subprocess.Popen(app_lower, shell=True)
 ```
 
 ---

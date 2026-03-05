@@ -1,5 +1,36 @@
-**The Windows Assistant is a **voice-controlled application** designed to manage desktop tasks. It relies on the *Voice Engine* (0) to continuously listen and convert spoken words into text commands, which are then passed to the *Central Router* (1) via an asynchronous queue (5). The router analyzes the intent and executes various actions, such as launching and manipulating software windows using the *Application Control Layer* (3) or interacting directly with the operating system, like adjusting the *system volume* and *screen brightness* (4).
+**The Arise Assistant** is a **premium voice-controlled application** designed for seamless Windows management. It features a **real-time 3D web dashboard** with a holographic JARVIS-style globe (inspired by Solo Leveling's Igris) and a dynamic microphone visualizer.
 
+## 🚀 Quick Start & Installation
+
+Getting the assistant up and running is fast and simple. Choose your preferred method:
+
+### Option 1: Using NPM (Recommended)
+If you have Node.js installed, simply run:
+```bash
+npm run setup
+```
+This will install all Python dependencies. Then start the assistant with:
+```bash
+npm start
+```
+
+### Option 2: One-Click Setup (Windows Native)
+Double-click the `setup.bat` file in the project root. This script will check for Python, update pip, and install all necessary dependencies for you.
+
+### Option 3: Manual Installation
+If you prefer the manual route via terminal:
+1. Ensure you have Python 3.8+ installed.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the assistant:
+   ```bash
+   python modular_assistant/main.py
+   ```
+
+> [!TIP]
+> **External Dependencies**: This project uses `PyAudio`. On some Windows systems, you may need to install it via `pip install pipwin && pipwin install pyaudio` if the standard install fails.
 
 ## Visual Overview
 
