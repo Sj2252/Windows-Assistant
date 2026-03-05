@@ -33,7 +33,9 @@ Mic -> SR -> Callback -> Queue -> State -> Router -> Control -> TTS -> Speaker
 - Window control using Win32 API
 
 ### `system_control.py`
-- `set_volume_percentage(p)` converts to scalar and sets volume with `pycaw`
+- `set_volume_percentage(p)`: Sets volume with `pycaw`
+- `set_brightness(level)`: Sets brightness via WMI
+- `control_media(action)`: Sends media keys via `win32api`
 
 ### `web_interaction.py`
 - URL-encode query and open browser

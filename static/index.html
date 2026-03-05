@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris - Voice Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="dashboard">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💠</span>
+                <h1>Iris Assistant</h1>
+            </div>
+            <div class="header-actions">
+                <div id="connection-status" class="status-badge disconnected">Disconnected</div>
+                <button id="manual-btn" class="icon-button" title="Command Manual">❓</button>
+                <button id="shutdown-btn" class="shutdown-button" title="Stop Assistant">✕</button>
+            </div>
+        </header>
+
+        <section class="main-content">
+            <div class="visualizer-container">
+                <div id="visualizer-orb" class="orb dormant">
+                    <div class="orb-inner"></div>
+                </div>
+                <div id="current-state" class="state-label">Dormant</div>
+                <div id="last-command" class="last-command-text">Say "Arise" to wake me up</div>
+            </div>
+
+            <div class="control-grid">
+                <div class="card glass">
+                    <h3>System Volume</h3>
+                    <div class="slider-container">
+                        <div id="volume-indicator" class="progress-bar">
+                            <div class="progress-fill" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card glass">
+                    <h3>Screen Brightness</h3>
+                    <div class="slider-container">
+                        <div id="brightness-indicator" class="progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="sidebar glass">
+            <h3>Activity History</h3>
+            <div id="history-feed" class="history-list">
+                <!-- History items will be added here -->
+            </div>
+        </aside>
+    </main>
+
+    <div id="manual-modal" class="modal-overlay">
+        <div class="modal-content glass">
+            <header class="modal-header">
+                <h2>Command Manual</h2>
+                <button id="close-manual" class="close-btn">&times;</button>
+            </header>
+            <div class="modal-body">
+                <section class="manual-section">
+                    <h3>🚀 Activation</h3>
+                    <ul>
+                        <li><strong>"Arise"</strong>: Wakes the assistant from sleep mode.</li>
+                        <li><strong>"Iris"</strong>: Use this prefix before any command (e.g., "Iris, what time is
+                            it?").</li>
+                    </ul>
+                </section>
+                <section class="manual-section">
+                    <h3>💻 Media & System</h3>
+                    <ul>
+                        <li><strong>Volume</strong>: "Set volume to 50 percent"</li>
+                        <li><strong>Brightness</strong>: "Set brightness to 80 percent"</li>
+                        <li><strong>Media</strong>: "Play music", "Pause", "Next song", "Previous"</li>
+                    </ul>
+                </section>
+                <section class="manual-section">
+                    <h3>📂 Applications</h3>
+                    <p>Supported: Chrome, Spotify, Excel, Word, Notepad, Calculator, VLC, and more.</p>
+                    <ul>
+                        <li><strong>"Open Spotify"</strong> / <strong>"Close Spotify"</strong></li>
+                        <li><strong>"Maximize Notepad"</strong> / <strong>"Minimize Notepad"</strong></li>
+                    </ul>
+                </section>
+                <section class="manual-section">
+                    <h3>🔍 General</h3>
+                    <ul>
+                        <li><strong>"Search for [query]"</strong>: Opens browser search</li>
+                        <li><strong>"What time is it?"</strong>: Speaks current time</li>
+                        <li><strong>"Go to sleep"</strong>: Returns to dormant mode</li>
+                        <li><strong>"Shutdown"</strong>: Closes the assistant entirely</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

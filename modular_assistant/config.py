@@ -12,7 +12,8 @@ APPS = {
     "explorer": {"command": "explorer", "window_title": "File Explorer", "type": "system"},
     "cmd": {"command": "cmd.exe", "window_title": "Command Prompt", "type": "system"},
     "microsoft edge": {"command": "msedge", "window_title": "Microsoft Edge", "type": "system"},
-    "edge": {"command": "msedge", "window_title": "Microsoft Edge", "type": "system"}
+    "edge": {"command": "msedge", "window_title": "Microsoft Edge", "type": "system"},
+    "spotify": {"command": "spotify", "window_title": "Spotify", "type": "system"}
 }
 
 # Azure Configuration

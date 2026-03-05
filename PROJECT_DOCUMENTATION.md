@@ -70,6 +70,8 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 - `close` / `stop` -> app control
 - `maximize` / `minimize` / `restore` -> app control
 - `volume` -> system control
+- `brightness` -> system control
+- `play` / `pause` / `next` / `previous` -> system control
 - `search` -> web interaction
 
 ---
@@ -94,11 +96,13 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 ### 3.4 `system_control.py`
 **Responsibilities:**
 - Volume control
+- Brightness control
+- Media playback control
 
 **Core logic:**
-- Validate 0–100 input
-- Convert percent to scalar (0.0–1.0)
-- Use `pycaw` to set master volume
+- Volume: Use `pycaw` to set master volume scalar (0.0-1.0).
+- Brightness: Use `wmi` to set monitor brightness levels.
+- Media: Use `win32api` to send global media keys (Play/Pause, Next, Previous).
 
 ---
 
@@ -155,6 +159,8 @@ Microphone -> Speech Recognition -> Callback -> Queue -> State Manager -> Router
 
 ## 8. Changelog
 **v1.0** Initial implementation: voice engine, router, app control, system control, web interaction, config.
+**v1.1** Added brightness control using WMI.
+**v1.2** Added Spotify support and global media playback controls (Play/Pause, Next, Previous).
 
 ---
 

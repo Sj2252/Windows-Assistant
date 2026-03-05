@@ -1,4 +1,6 @@
 import wmi
+import win32api
+import win32con
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume
 from voice_engine import speak
 
@@ -43,4 +45,31 @@ def set_brightness(level):
     except Exception as e:
         print(f"Error setting brightness: {e}")
         speak("I could not change the brightness on this device.")
+        return False
+
+def control_media(action):
+    """
+    Control media playback (play, pause, next, previous)
+    """
+    # Key codes for media control
+    VK_MEDIA_NEXT_TRACK = 0xB0
+    VK_MEDIA_PREV_TRACK = 0xB1
+    VK_MEDIA_PLAY_PAUSE = 0xB3
+    
+    try:
+        if action == "play" or action == "pause" or action == "play/pause":
+            win32api.keybd_event(VK_MEDIA_PLAY_PAUSE, 0, 0, 0)
+            win32api.keybd_event(VK_MEDIA_PLAY_PAUSE, 0, win32con.KEYEVENTF_KEYUP, 0)
+            speak(f"Media {action}")
+        elif action == "next":
+            win32api.keybd_event(VK_MEDIA_NEXT_TRACK, 0, 0, 0)
+            win32api.keybd_event(VK_MEDIA_NEXT_TRACK, 0, win32con.KEYEVENTF_KEYUP, 0)
+            speak("Playing next track")
+        elif action == "previous":
+            win32api.keybd_event(VK_MEDIA_PREV_TRACK, 0, 0, 0)
+            win32api.keybd_event(VK_MEDIA_PREV_TRACK, 0, win32con.KEYEVENTF_KEYUP, 0)
+            speak("Playing previous track")
+        return True
+    except Exception as e:
+        print(f"Error controlling media: {e}")
         return False

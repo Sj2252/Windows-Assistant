@@ -1,13 +1,81 @@
 import datetime
 import re
+import threading
+import asyncio
+from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import uvicorn
+import webbrowser
+import os
+import signal
 from voice_engine import speak, start_listening, command_queue
 from app_control import open_app, close_app_by_name, maximize_window, minimize_window, restore_window
-from system_control import set_volume_percentage, set_brightness
+from system_control import set_volume_percentage, set_brightness, control_media
 from web_interaction import search_web
 
+# --- API Setup ---
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def get_dashboard():
+    return FileResponse("static/index.html")
+
+@app.post("/shutdown")
+async def shutdown():
+    """Endpoint to trigger system shutdown"""
+    speak("Shutting down the assistant. Goodbye!")
+    # Send signal to terminate the process
+    os.kill(os.getpid(), signal.SIGINT)
+    return {"status": "shutting down"}
+
+# Global for connected UI clients
+connected_clients = set()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    connected_clients.add(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except:
+        connected_clients.remove(websocket)
+
+async def notify_ui(event_type, data):
+    """Send updates to all connected UI clients"""
+    if not connected_clients:
+        return
+    message = {"type": event_type, "data": data}
+    for client in connected_clients:
+        try:
+            await client.send_json(message)
+        except:
+            pass
+
+def run_api():
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
+
 def main():
+    # Start API in a background thread
+    api_thread = threading.Thread(target=run_api, daemon=True)
+    api_thread.start()
+    
+    # Auto-open the dashboard in the browser
+    webbrowser.open("http://localhost:8000")
+    
     # Greeting
-    speak("Hello, I am your Windows voice assistant.")
+    speak("Hello, I am your Windows voice assistant. Say Arise to wake me up.")
     
     # Start background listening
     listener = start_listening()
@@ -15,6 +83,10 @@ def main():
         print("Failed to start listener.")
         return
 
+    # Create an event loop for async notifications within the main thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
     # State variables
     session_active = False  # Has user said "Arise"?
     listening_for_command = False  # Did user say just "Iris" and we're waiting for command?
@@ -27,11 +99,15 @@ def main():
             # Block until a command is available
             command = command_queue.get()
             
+            # Send raw text to UI
+            loop.run_until_complete(notify_ui("transcript", command))
+            
             # --- State 1: Dormant (waiting for "Arise") ---
             if not session_active:
                 if "arise" in command or "arice" in command:
                     print("Session activated!")
                     session_active = True
+                    loop.run_until_complete(notify_ui("state", "active"))
                     speak("I am ready. Say Iris followed by your command.")
                     print("State: Active Session - Waiting for 'Iris'")
                 else:
@@ -58,6 +134,7 @@ def main():
                         # User said just "Iris", enter listening mode
                         print("Entering listening mode...")
                         listening_for_command = True
+                        loop.run_until_complete(notify_ui("state", "listening"))
                         speak("Listening")
                         continue
                 else:
@@ -105,22 +182,53 @@ def main():
                 if numbers:
                     volume_percent = int(numbers[0])
                     set_volume_percentage(volume_percent)
+                    loop.run_until_complete(notify_ui("volume", volume_percent))
 
             elif "brightness" in command:
                 numbers = re.findall(r'\d+', command)
                 if numbers:
                     level = int(numbers[0])
                     set_brightness(level)
+                    loop.run_until_complete(notify_ui("brightness", level))
                 elif "increase" in command:
                     set_brightness(80)
+                    loop.run_until_complete(notify_ui("brightness", 80))
                 elif "decrease" in command:
                     set_brightness(30)
+                    loop.run_until_complete(notify_ui("brightness", 30))
 
             elif "sleep" in command or "go to sleep" in command:
                 speak("Going to sleep. Say Arise to wake me.")
                 session_active = False
                 listening_for_command = False
+                loop.run_until_complete(notify_ui("state", "dormant"))
                 print("State: Dormant - Say 'Arise' to activate")
+
+            elif "play" in command and "music" in command:
+                control_media("play")
+            
+            elif "pause" in command and "music" in command:
+                control_media("pause")
+            
+            elif "next" in command and "song" in command:
+                control_media("next")
+            
+            elif "previous" in command and "song" in command:
+                control_media("previous")
+
+            elif "spotify" in command:
+                if "open" in command:
+                    open_app("spotify")
+                elif "close" in command or "stop" in command:
+                    close_app_by_name("spotify")
+                elif "play" in command:
+                    control_media("play")
+                elif "pause" in command:
+                    control_media("pause")
+                elif "next" in command:
+                    control_media("next")
+                elif "previous" in command:
+                    control_media("previous")
 
             elif "exit" in command or "quit" in command or "shutdown" in command:
                 speak("Thank you. Goodbye!")
