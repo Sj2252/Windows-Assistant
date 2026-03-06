@@ -1,6 +1,6 @@
 **The Arise Assistant** is a **premium voice-controlled application** designed for seamless Windows management. It features a **real-time 3D web dashboard** with a holographic JARVIS-style globe (inspired by Solo Leveling's Igris) and a dynamic microphone visualizer.
 
-## 🚀 Quick Start & Installation
+##  Quick Start & Installation
 
 Getting the assistant up and running is fast and simple. Choose your preferred method:
 
@@ -29,8 +29,7 @@ If you prefer the manual route via terminal:
    python modular_assistant/main.py
    ```
 
-> [!TIP]
-> **External Dependencies**: This project uses `PyAudio`. On some Windows systems, you may need to install it via `pip install pipwin && pipwin install pyaudio` if the standard install fails.
+> **External Dependencies**: This project uses `PyAudio`. On some Windows systems may need to install it via `pip install pipwin && pipwin install pyaudio`
 
 ## Visual Overview
 
@@ -89,8 +88,7 @@ The Voice Engine solves this by doing two key things:
 
 1.  **Speech Recognition (SR):** Converting your spoken sound waves into usable text commands.
 2.  **Background Processing:** Running the listening process in a separate background thread so the main program stays fast and responsive.
-
-Let's look at how we give the assistant its voice and listening abilities.
+3.   Let's look at how we give the assistant its voice and listening abilities.
 
 ---
 
