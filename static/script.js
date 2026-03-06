@@ -13,22 +13,28 @@ const appsContainer = document.getElementById('apps-container');
 
 shutdownBtn.onclick = () => {
     if (confirm("Stop the assistant program?")) {
-        fetch('/shutdown', { method: 'POST' })
-            .then(() => {
-                document.body.classList.add('stopped');
-                if (statusBadge) {
-                    statusBadge.textContent = 'Assistant Stopped';
-                    statusBadge.className = 'status-badge disconnected';
-                }
-                updateState('dormant');
-                alert("Assistant is shutting down. This tab will now close.");
+        // Change orb to white first
+        updateState('stopping');
 
-                // Wait for alert to be dismissed then try to close
-                setTimeout(() => {
-                    window.open('', '_self', '').close();
-                }, 500);
-            })
-            .catch(() => alert("Could not stop assistant. Check if it is already closed."));
+        // Wait a bit before sending shutdown request
+        setTimeout(() => {
+            fetch('/shutdown', { method: 'POST' })
+                .then(() => {
+                    document.body.classList.add('stopped');
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Assistant Stopped';
+                        statusBadge.className = 'status-badge disconnected';
+                    }
+                    updateState('dormant');
+                    alert("Assistant is shutting down. This tab will now close.");
+
+                    // Wait for alert to be dismissed then try to close
+                    setTimeout(() => {
+                        window.open('', '_self', '').close();
+                    }, 500);
+                })
+                .catch(() => alert("Could not stop assistant. Check if it is already closed."));
+        }, 1500); // 1.5 second delay to show white orb
     }
 };
 
@@ -201,6 +207,8 @@ function updateState(state) {
         lastCommandText.textContent = 'Waiting for "Iris"...';
     } else if (state === 'listening') {
         lastCommandText.textContent = 'Listening...';
+    } else if (state === 'stopping') {
+        lastCommandText.textContent = 'Shutting down...';
     }
 }
 

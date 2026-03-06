@@ -151,7 +151,11 @@ def main():
             # --- Command Processing ---
             
             if any(k in command for k in ["exit", "quit", "shutdown", "stop assistant", "stop the assistant"]):
+                loop.run_until_complete(notify_ui("state", "stopping"))
                 speak("Thank you. Goodbye!")
+                # Give time for the UI to update and user to see the white orb
+                import time
+                time.sleep(1.5)
                 break
 
             elif "time" in command:

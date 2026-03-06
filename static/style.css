@@ -1,7 +1,7 @@
 :root {
     --bg-dark: #0a0b1e;
     --primary-neon: #00f2ff;
-    --secondary-neon: #7000ff;
+    --secondary-neon: #ff2a2a;
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --text-primary: #ffffff;
@@ -432,6 +432,16 @@ body.stopped .orb-inner {
 .orb.listening .orb-core {
     background: radial-gradient(circle, #fff 0%, var(--secondary-neon) 50%, transparent 100%);
     box-shadow: 0 0 50px var(--secondary-neon);
+}
+
+.orb.stopping .orb-ring {
+    border-color: #ffffff;
+    opacity: 0.9;
+}
+
+.orb.stopping .orb-core {
+    background: radial-gradient(circle, #fff 0%, #ffffff 50%, transparent 100%);
+    box-shadow: 0 0 60px #ffffff;
 }
 
 .state-label {
